@@ -7,6 +7,11 @@ converted/normalized from the actual timm pretrained config before ViT sees them
 Resize/crop stays in the data pipeline; this model never silently resizes images.
 """
 from contextlib import nullcontext
+import os
+
+# This project uses the PyTorch backend only. Set before any Transformers import.
+os.environ["USE_TF"] = "0"
+os.environ["USE_FLAX"] = "0"
 
 import torch
 from torch import nn

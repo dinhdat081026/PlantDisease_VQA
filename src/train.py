@@ -14,6 +14,9 @@ import hashlib
 import json
 import math
 import os
+# Disable unused Transformers backends before any project/HF module can import them.
+os.environ["USE_TF"] = "0"
+os.environ["USE_FLAX"] = "0"
 from pathlib import Path
 import random
 import subprocess
@@ -110,7 +113,7 @@ def train_one_epoch(model, loader, optimizer, *, device, scaler, max_grad_norm=1
     if accumulation_steps < 1:
         raise ValueError("accumulation_steps must be positive")
     criterion = nn.CrossEntropyLoss()
-    total, correct, loss_sum = 0, 0, 0.0
+    total, correct, loss_sum, optimizer_steps = 0, 0, 0.0, 0
     optimizer.zero_grad(set_to_none=True)
     num_batches = len(loader)
     for batch_index, batch in enumerate(loader):
@@ -127,8 +130,12 @@ def train_one_epoch(model, loader, optimizer, *, device, scaler, max_grad_norm=1
         if should_step:
             scaler.unscale_(optimizer)
             nn.utils.clip_grad_norm_([p for p in model.parameters() if p.requires_grad], max_grad_norm)
+            previous_scale = scaler.get_scale()
             scaler.step(optimizer)
             scaler.update()
+            # GradScaler skips optimizer.step on overflow and lowers its scale.
+            if scaler.get_scale() >= previous_scale:
+                optimizer_steps += 1
             optimizer.zero_grad(set_to_none=True)
         count = labels.numel()
         total += count
@@ -136,7 +143,7 @@ def train_one_epoch(model, loader, optimizer, *, device, scaler, max_grad_norm=1
         correct += int((logits.detach().argmax(-1) == labels).sum().item())
     if not total:
         raise ValueError("Empty training loader")
-    return {"loss": loss_sum / total, "accuracy": correct / total, "total": total}
+    return {"loss": loss_sum / total, "accuracy": correct / total, "total": total, "optimizer_steps": optimizer_steps}
 
 
 def digest_json(value):
@@ -334,7 +341,7 @@ def fit(model, train_loader, val_loader, *, config, answer_to_idx, tokenizer,
     results.mkdir(parents=True, exist_ok=True)
     marker = results / f"{stem}_run.json"
     if not resume and (checkpoint_path.exists() or last_path.exists() or marker.exists()):
-        raise FileExistsError("Experiment already started/completed; use --resume with its compatible _last.pt checkpoint")
+        raise FileExistsError("Experiment already started/completed; refusing to repeat this configuration. Use --resume with its compatible _last.pt checkpoint")
     if resume and not last_path.is_file():
         raise FileNotFoundError(f"Resume checkpoint missing: {last_path}")
     summary_path = results / "summary.csv"
@@ -372,7 +379,8 @@ def fit(model, train_loader, val_loader, *, config, answer_to_idx, tokenizer,
     for epoch in range(start_epoch, config.epochs + 1):
         train_metrics = train_one_epoch(model, train_loader, optimizer, device=device, scaler=scaler, max_grad_norm=config.max_grad_norm, accumulation_steps=config.gradient_accumulation_steps)
         validation = evaluate_loader(model, val_loader, answer_to_idx, device=device, baseline=baseline)
-        scheduler.step()
+        if train_metrics["optimizer_steps"] > 0:
+            scheduler.step()
         accuracy = validation["metrics"]["accuracy"]
         if not math.isfinite(accuracy) or not 0 <= accuracy <= 1:
             raise ValueError("Invalid validation accuracy")

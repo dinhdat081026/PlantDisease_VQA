@@ -197,7 +197,7 @@ def test_fit_selects_val_best_checkpoint_keeps_earliest_tie_and_roundtrips(tmp_p
         train_calls.append(loader)
         with torch.no_grad():
             current_model.fusion.bias.fill_(len(train_calls))
-        return {"loss": 1.0, "accuracy": .5, "total": 4}
+        return {"loss": 1.0, "accuracy": .5, "total": 4, "optimizer_steps": 1}
     def fake_val(current_model, loader, *args, **kwargs):
         assert loader is val_loader
         val_calls.append(loader)
@@ -242,3 +242,28 @@ def test_fit_never_enters_training_without_data_evidence(tmp_path, tokenizer):
 def test_tokenizer_rejects_path_traversal(tmp_path):
     with pytest.raises(ValueError, match="Unsafe"):
         restore_tokenizer({"files": {"../outside.txt": b"bad"}}, tmp_path)
+
+
+def test_scheduler_does_not_step_when_amp_skips_every_optimizer_step(tmp_path, monkeypatch, tokenizer):
+    import src.train as training
+    config = TrainConfig(epochs=1, output_dir=str(tmp_path))
+    model = TinyModel()
+    manifest = {"source_sha256": "synthetic_fixture"}
+    monkeypatch.setattr(training, "train_one_epoch", lambda *a, **k: {"loss": 1.0, "accuracy": .5, "total": 4, "optimizer_steps": 0})
+    monkeypatch.setattr(training, "evaluate_loader", lambda *a, **k: {"metrics": {"accuracy": .25, "loss_known_answers": 1.0, "total": 4, "unknown": 0}})
+    stepped = []
+    original_factory = torch.optim.lr_scheduler.LambdaLR
+    def make_scheduler(*args, **kwargs):
+        scheduler = original_factory(*args, **kwargs)
+        original_step = scheduler.step
+        def observed_step(*step_args, **step_kwargs):
+            stepped.append(True)
+            return original_step(*step_args, **step_kwargs)
+        scheduler.step = observed_step
+        return scheduler
+    monkeypatch.setattr(training.torch.optim.lr_scheduler, "LambdaLR", make_scheduler)
+    kwargs = dict(config=config, answer_to_idx={"No": 0, "Yes": 1}, tokenizer=tokenizer,
+        preprocessing={"image_format": "normalized"}, baseline={"by_question_type": {}, "fallback": "No"},
+        data_manifest=manifest, data_validation=evidence(manifest), device="cpu")
+    training.fit(model, object(), object(), **kwargs)
+    assert stepped == []
