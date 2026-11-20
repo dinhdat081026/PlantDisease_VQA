@@ -296,6 +296,49 @@ def save_checkpoint(path, payload):
         temporary.unlink(missing_ok=True)
 
 
+def scheduler_state_for_checkpoint(scheduler):
+    """Return a serializable scheduler state, excluding runtime callables.
+
+    PyTorch scheduler ``state_dict()`` is normally data-only, but it copies
+    scheduler instance attributes. Instrumentation or wrappers can attach a
+    bound/local function (for example an observed ``step`` method), which is
+    neither checkpoint state nor safely pickleable. Strip such values without
+    mutating the live scheduler; reject other unexpected object types.
+    """
+    def clean(value, location):
+        if callable(value):
+            return _DROP_CHECKPOINT_VALUE
+        if value is None or isinstance(value, (bool, int, float, str, bytes, torch.Tensor)):
+            return value
+        if isinstance(value, dict):
+            result = {}
+            for key, child in value.items():
+                if not isinstance(key, (bool, int, float, str, bytes)):
+                    raise TypeError(f"Unsupported scheduler checkpoint key at {location}: {type(key).__name__}")
+                cleaned = clean(child, f"{location}.{key}")
+                if cleaned is not _DROP_CHECKPOINT_VALUE:
+                    result[key] = cleaned
+            return result
+        if isinstance(value, (list, tuple)):
+            items = [clean(child, f"{location}[{index}]") for index, child in enumerate(value)]
+            # Preserve positional state (notably LambdaLR's lr_lambdas list).
+            items = [None if child is _DROP_CHECKPOINT_VALUE else child for child in items]
+            return type(value)(items)
+        raise TypeError(f"Unsupported scheduler checkpoint value at {location}: {type(value).__name__}")
+
+    state = clean(scheduler.state_dict(), "scheduler_state_dict")
+    if not isinstance(state, dict):
+        raise TypeError("Scheduler state_dict must be a mapping")
+    return state
+
+
+class _DropCheckpointValue:
+    """Sentinel used while filtering a scheduler state tree."""
+
+
+_DROP_CHECKPOINT_VALUE = _DropCheckpointValue()
+
+
 def update_summary(path, config, values, *, require_existing=False, allow_update=True):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -401,7 +444,7 @@ def fit(model, train_loader, val_loader, *, config, answer_to_idx, tokenizer,
             "seed": SEED, "epoch": epoch, "best_accuracy": best_accuracy, "best_epoch": best_epoch,
             "history": history, "data_manifest": data_manifest,
             "model_state_dict": {k: v.detach().cpu().clone() for k, v in model.state_dict().items()},
-            "optimizer_state_dict": optimizer.state_dict(), "scheduler_state_dict": scheduler.state_dict(),
+            "optimizer_state_dict": optimizer.state_dict(), "scheduler_state_dict": scheduler_state_for_checkpoint(scheduler),
             "scaler_state_dict": scaler.state_dict(), "torch_rng_state": torch.get_rng_state(),
             "python_rng_state": random.getstate(), "numpy_rng_state": np.random.get_state(),
             "cuda_rng_state": torch.cuda.get_rng_state_all() if device.type == "cuda" else None})
