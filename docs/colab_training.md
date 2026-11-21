@@ -27,3 +27,14 @@ The evaluation cell calls python -m src.evaluate --ckpt <checkpoint>. Evaluation
 
 ## Verification status
 Python commands in the current Windows workspace fail to start (Access is denied/EPERM). Pytest, compileall, CLI help, notebook execution, CUDA AMP and Drive mounting are unverified here. No training or accuracy result is claimed; the first manual Colab run is still required.
+
+
+## Training and checkpoint troubleshooting
+
+Run notebook sections 1–7 first (source setup, CUDA dependencies, Drive, dataset, tests, resource profile and validation helper). Section 8 has a helper cell, an active Step 1 Training cell (default mini/full), and Step 2 checkpoint verification and backup. Running Step 1 launches training; it is no longer hidden behind `if False`. Do not use Run all unless you intend to start this experiment.
+
+Checkpoints keep the existing `mode_level` naming: `/content/outputs/models/full_mini.pt` is the best mini/full checkpoint; `full_mini_last.pt` is the resume state. Epoch logs show train loss and validation accuracy. The output CLI accepts both `--output-dir` and `--output_dir`.
+
+Section 9 evaluates the selected LEVEL/MODE, searching local outputs then Drive for exactly that best checkpoint. Set CHECKPOINT_OVERRIDE for an explicit path. It never selects by modification time or falls back to `_last.pt`. A missing checkpoint prints instructions without starting evaluation or training. Section 10 backs up results again.
+
+For resume after runtime reset, copy the matching best checkpoint, `_last.pt`, and results folder from Drive back to OUTPUT_DIR before setting RESUME=True; retain identical config, source and data paths. Training backs up completed epoch artifacts in a finally block on ordinary failures. Forced runtime termination can bypass this backup; only files already copied to Drive survive it.

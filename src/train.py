@@ -430,6 +430,7 @@ def fit(model, train_loader, val_loader, *, config, answer_to_idx, tokenizer,
         history.append({"epoch": epoch, "train_loss": train_metrics["loss"], "train_accuracy": train_metrics["accuracy"],
                         "val_loss_known": validation["metrics"]["loss_known_answers"], "val_accuracy": accuracy,
                         "val_unknown": validation["metrics"]["unknown"]})
+        print(f"Epoch {epoch}/{config.epochs} | train_loss={train_metrics['loss']:.6f} | val_accuracy={accuracy:.6f}", flush=True)
         if accuracy > best_accuracy:  # Strict improvement: ties keep the earlier epoch.
             best_accuracy, best_epoch = accuracy, epoch
             save_checkpoint(checkpoint_path, {"schema_version": 1,
@@ -470,7 +471,7 @@ def main(argv=None):
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--encoder-lr", type=float, default=2e-5)
     parser.add_argument("--head-lr", type=float, default=1e-3)
-    parser.add_argument("--output-dir", default="outputs")
+    parser.add_argument("--output-dir", "--output_dir", dest="output_dir", default="outputs")
     parser.add_argument("--test-policy", choices=("preserve", "subset"), default="preserve")
     parser.add_argument("--validation-report", type=Path)
     parser.add_argument("--validate-only", action="store_true")
