@@ -1,0 +1,308 @@
+[
+  {
+    "file": "outputs/models/full_mini.pt",
+    "size": 785111585,
+    "entries": 363,
+    "verifiedCRC": 363,
+    "storageCount": 357,
+    "modelKeys": 357,
+    "rootKeys": [
+      "schema_version",
+      "model_state_dict",
+      "config",
+      "answer_to_idx",
+      "mode",
+      "tokenizer",
+      "preprocessing",
+      "epoch",
+      "seed",
+      "validation_metric",
+      "data_manifest",
+      "data_validation",
+      "baseline",
+      "torch_version"
+    ],
+    "schema_version": 1,
+    "config": {
+      "level": "mini",
+      "mode": "full",
+      "epochs": 4,
+      "encoder_lr": 0.00002,
+      "head_lr": 0.001,
+      "weight_decay": 0.01,
+      "max_grad_norm": 1,
+      "batch_size": 4,
+      "num_workers": 2,
+      "max_length": 64,
+      "rare_min_images": 5,
+      "target_images": null,
+      "test_policy": "subset",
+      "data_dir": "/content/data/PlantVillageVQA",
+      "source_csv": "/content/data/PlantVillageVQA/a025a438308eff9a7289231ebc09e27e8ec6678c/PlantVillageVQA/PlantVillageVQA.csv",
+      "output_dir": "/content/outputs",
+      "gradient_accumulation_steps": 4
+    },
+    "mode": "full",
+    "seed": 59,
+    "epoch": 3,
+    "torch_version": "2.14.1+cu130",
+    "validation_metric": {
+      "name": "exact_match_accuracy",
+      "value": 0.8650306748466258,
+      "total": 326,
+      "unknown": 3
+    },
+    "data_manifest": {
+      "source_sha256": "a96f8b5306bac41e171ad36af7ed3b2c0d0fd4ca4d3b2eacc06617ef8fafc06d",
+      "image_fingerprint": "687e1a82b0e24613e1774165de9069fb07ed656206067bf70a3ff2dfee6b449a",
+      "image_count": 993,
+      "data_code_sha256": {
+        "src/config.py": "0c7bca542ee1a34cd9f5fd24442c7fe068fb130591c5add3f82bef1a5ec691fd",
+        "src/data.py": "727fe61c952e91b4776a9895c5a47aa44ee6143ac75f8a9980e30268f6288330",
+        "src/download.py": "7a1c89788cd0746539a395e5919a886260e99cfe873dd27cfa3b7a6433a19d5f",
+        "src/eda.py": "60558aa059cc1c1958cda32ee3dd0a89d44f9b2e174d6edff9eb5d5f78905192"
+      },
+      "split_fingerprints": {
+        "train": "1179a9ed20b778291529519c02a6d85931141fc4078dc851c5addee8b4cd74b5",
+        "val": "624f56e09db1595551041f9ed1633c1eeeec43061931b7cf80c2784e9e9fce85",
+        "test": "a1a385d7f0ad93866e549d6f4b8687ec0b2783faf28db19461a093ba1943df20"
+      },
+      "answer_vocab_sha256": "916020d44aae1e5ee202552a951bacce6765c1fb8d93bc8055f68993355de632",
+      "tokenizer_vocab_sha256": "373b066fa218cddd79eec036c10bec16e439381f94d6845bf3106ef8194cff36",
+      "tokenizer_settings": {
+        "do_lower_case": true,
+        "padding_side": "right",
+        "truncation_side": "right",
+        "special_tokens_map": {
+          "unk_token": "[UNK]",
+          "sep_token": "[SEP]",
+          "pad_token": "[PAD]",
+          "cls_token": "[CLS]",
+          "mask_token": "[MASK]"
+        }
+      },
+      "split_config": {
+        "level": "mini",
+        "test_policy": "subset",
+        "rare_min_images": 5,
+        "target_images": null,
+        "max_length": 64,
+        "seed": 59,
+        "validation_fraction": 0.15,
+        "min_answer_count": 5
+      },
+      "eval_transform": "Compose(\n    Resize(size=248, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeToTensor()\n    Normalize(mean=tensor([0.5000, 0.5000, 0.5000]), std=tensor([0.5000, 0.5000, 0.5000]))\n)"
+    },
+    "preprocessing": {
+      "image_model": "vit_base_patch16_224",
+      "text_model": "bert-base-uncased",
+      "data_config": {
+        "input_size": [
+          3,
+          224,
+          224
+        ],
+        "interpolation": "bicubic",
+        "mean": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "std": [
+          0.5,
+          0.5,
+          0.5
+        ],
+        "crop_pct": 0.9,
+        "crop_mode": "center"
+      },
+      "train_augmentation": {
+        "hflip": 0.5,
+        "vflip": 0,
+        "color_jitter": 0.4,
+        "scale": [
+          0.08,
+          1
+        ],
+        "ratio": [
+          0.75,
+          1.3333333333333333
+        ],
+        "re_prob": 0
+      },
+      "image_format": "normalized",
+      "max_length": 64
+    },
+    "answer_to_idx": {
+      "Apple": 0,
+      "Blueberry": 1,
+      "Corn": 2,
+      "Grape": 3,
+      "No": 4,
+      "Orange": 5,
+      "Pepper bell": 6,
+      "Potato": 7,
+      "Soybean": 8,
+      "Tomato": 9,
+      "Yes": 10
+    }
+  },
+  {
+    "file": "outputs/models/full_mini_last.pt",
+    "size": 2352535647,
+    "entries": 1430,
+    "verifiedCRC": 1430,
+    "storageCount": 1424,
+    "modelKeys": 357,
+    "rootKeys": [
+      "schema_version",
+      "config",
+      "mode",
+      "seed",
+      "epoch",
+      "best_accuracy",
+      "best_epoch",
+      "history",
+      "data_manifest",
+      "model_state_dict",
+      "optimizer_state_dict",
+      "scheduler_state_dict",
+      "scaler_state_dict",
+      "torch_rng_state",
+      "python_rng_state",
+      "numpy_rng_state",
+      "cuda_rng_state"
+    ],
+    "schema_version": 2,
+    "config": {
+      "level": "mini",
+      "mode": "full",
+      "epochs": 4,
+      "encoder_lr": 0.00002,
+      "head_lr": 0.001,
+      "weight_decay": 0.01,
+      "max_grad_norm": 1,
+      "batch_size": 4,
+      "num_workers": 2,
+      "max_length": 64,
+      "rare_min_images": 5,
+      "target_images": null,
+      "test_policy": "subset",
+      "data_dir": "/content/data/PlantVillageVQA",
+      "source_csv": "/content/data/PlantVillageVQA/a025a438308eff9a7289231ebc09e27e8ec6678c/PlantVillageVQA/PlantVillageVQA.csv",
+      "output_dir": "/content/outputs",
+      "gradient_accumulation_steps": 4
+    },
+    "mode": "full",
+    "seed": 59,
+    "epoch": 4,
+    "best_epoch": 3,
+    "best_accuracy": 0.8650306748466258,
+    "history": [
+      {
+        "epoch": 1,
+        "train_loss": 3.2157001648924566,
+        "train_accuracy": 0.7098181818181818,
+        "val_loss_known": 0.5534263772143184,
+        "val_accuracy": 0.803680981595092,
+        "val_unknown": 3
+      },
+      {
+        "epoch": 2,
+        "train_loss": 2.1021335523832927,
+        "train_accuracy": 0.8218181818181818,
+        "val_loss_known": 0.4278216704152432,
+        "val_accuracy": 0.8220858895705522,
+        "val_unknown": 3
+      },
+      {
+        "epoch": 3,
+        "train_loss": 1.7222478544574908,
+        "train_accuracy": 0.8545454545454545,
+        "val_loss_known": 0.32604319368915824,
+        "val_accuracy": 0.8650306748466258,
+        "val_unknown": 3
+      },
+      {
+        "epoch": 4,
+        "train_loss": 1.6632781545756892,
+        "train_accuracy": 0.856,
+        "val_loss_known": 0.6797656236976369,
+        "val_accuracy": 0.8098159509202454,
+        "val_unknown": 3
+      }
+    ],
+    "data_manifest": {
+      "source_sha256": "a96f8b5306bac41e171ad36af7ed3b2c0d0fd4ca4d3b2eacc06617ef8fafc06d",
+      "image_fingerprint": "687e1a82b0e24613e1774165de9069fb07ed656206067bf70a3ff2dfee6b449a",
+      "image_count": 993,
+      "data_code_sha256": {
+        "src/config.py": "0c7bca542ee1a34cd9f5fd24442c7fe068fb130591c5add3f82bef1a5ec691fd",
+        "src/data.py": "727fe61c952e91b4776a9895c5a47aa44ee6143ac75f8a9980e30268f6288330",
+        "src/download.py": "7a1c89788cd0746539a395e5919a886260e99cfe873dd27cfa3b7a6433a19d5f",
+        "src/eda.py": "60558aa059cc1c1958cda32ee3dd0a89d44f9b2e174d6edff9eb5d5f78905192"
+      },
+      "split_fingerprints": {
+        "train": "1179a9ed20b778291529519c02a6d85931141fc4078dc851c5addee8b4cd74b5",
+        "val": "624f56e09db1595551041f9ed1633c1eeeec43061931b7cf80c2784e9e9fce85",
+        "test": "a1a385d7f0ad93866e549d6f4b8687ec0b2783faf28db19461a093ba1943df20"
+      },
+      "answer_vocab_sha256": "916020d44aae1e5ee202552a951bacce6765c1fb8d93bc8055f68993355de632",
+      "tokenizer_vocab_sha256": "373b066fa218cddd79eec036c10bec16e439381f94d6845bf3106ef8194cff36",
+      "tokenizer_settings": {
+        "do_lower_case": true,
+        "padding_side": "right",
+        "truncation_side": "right",
+        "special_tokens_map": {
+          "unk_token": "[UNK]",
+          "sep_token": "[SEP]",
+          "pad_token": "[PAD]",
+          "cls_token": "[CLS]",
+          "mask_token": "[MASK]"
+        }
+      },
+      "split_config": {
+        "level": "mini",
+        "test_policy": "subset",
+        "rare_min_images": 5,
+        "target_images": null,
+        "max_length": 64,
+        "seed": 59,
+        "validation_fraction": 0.15,
+        "min_answer_count": 5
+      },
+      "eval_transform": "Compose(\n    Resize(size=248, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    MaybeToTensor()\n    Normalize(mean=tensor([0.5000, 0.5000, 0.5000]), std=tensor([0.5000, 0.5000, 0.5000]))\n)"
+    },
+    "scaler_state_dict": {
+      "scale": 8192,
+      "growth_factor": 2,
+      "backoff_factor": 0.5,
+      "growth_interval": 2000,
+      "_growth_tracker": 222
+    },
+    "scheduler_state_dict": {
+      "base_lrs": [
+        0.00002,
+        0.00002,
+        0.001,
+        0.001
+      ],
+      "last_epoch": 4,
+      "_step_count": 5,
+      "_is_initial": false,
+      "_get_lr_called_within_step": false,
+      "_last_lr": [
+        0.00002,
+        0.00002,
+        0.001,
+        0.001
+      ],
+      "lr_lambdas": [
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  }
+]
